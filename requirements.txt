@@ -1,0 +1,24 @@
+# Core dependencies. Tested with Python 3.10, PyTorch 2.5, CUDA 12.1.
+# Install with:  pip install -r requirements.txt
+#
+# Then install gsplat per its upstream instructions (it ships its own CUDA build):
+#   pip install gsplat==1.5.3
+
+torch>=2.0
+numpy>=1.23
+PyYAML>=6.0
+tqdm
+
+# Mesh handling and ray-cast baselines
+trimesh>=4.0
+open3d>=0.18           # Poisson surface reconstruction
+pyrender>=0.1.45       # multi-view mesh rendering (PyOpenGL backend)
+
+# Plotting
+matplotlib>=3.6
+pillow
+
+# Optional, install only for specific tooling:
+#   pip install tinycudann          # CUDA-fused DDF, see scripts/bench_ddf_tcnn.py
+#   pip install mitsuba             # OptiX BVH benchmark, scripts/bench_ddf_vs_bvh_mitsuba.py
+#   pip install nerfstudio          # NeuS baseline, scripts/sota_train_neus.py

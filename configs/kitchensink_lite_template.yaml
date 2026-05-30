@@ -1,0 +1,36 @@
+# Kitchen-sink lite: march (proven on bull) + hi-res supervisor + LR cosine + 30k steps.
+# Same recipe as bull_hashgrid_kitchensink.yaml but 30k steps (vs 60k) and march_ratio
+# at the proven 0.3 (vs 0.5). Keeps the breakthrough ingredients without the full
+# 2h-per-object cost. Per-object: override gs_path + out_dir via CLI.
+
+device: cuda
+out_dir: runs/PLACEHOLDER_ddf_ks
+
+steps: 30000
+batch_size: 16384
+lr: 3.0e-3
+lr_schedule: cosine
+lr_min_ratio: 0.05
+log_every: 1000
+save_every: 5000
+
+lambda_vis: 0.3
+
+supervisor:
+  type: gs
+  gs_path: runs/PLACEHOLDER_50k/gaussians.pt
+  image_size: 256
+  march_ratio: 0.3
+
+model:
+  type: hashgrid
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2

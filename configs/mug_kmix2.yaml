@@ -1,0 +1,52 @@
+# Stage 15+ followup: K=2 mixture DDF, mug variant. Same recipe as
+# bull_kmix2.yaml but with mug GS path. Mug is the critical hollow-topology
+# test where we expect the inner wall to emerge as the second surface.
+#
+# Differences from bull_kmix2.yaml:
+#   * gamma_xi2 = 0   — the BCE-to-zero on miss is redundant (primary xi_1 BCE
+#                       already drives the trunk to predict "no visibility"
+#                       on miss rays; sharing the trunk pulls xi_2 along).
+#                       In bull's 1k-step run xi_2 collapsed to 0.001 with
+#                       gamma_xi2=0.1 because there is no positive signal.
+#   * gamma_xi2_hit = 0.05 — weak positive pull: on hit rays the xi_2 logit is
+#                       softly drawn toward xi_1 logit (detached). This keeps
+#                       xi_2 alive (above the vis_thresh=0.3 used at extract
+#                       time) wherever a primary surface exists.
+
+device: cuda
+out_dir: runs/mug_ddf_kmix2
+
+steps: 30000
+batch_size: 16384
+lr: 3.0e-3
+lr_schedule: cosine
+lr_min_ratio: 0.05
+log_every: 1000
+save_every: 5000
+
+lambda_vis: 0.3
+
+supervisor:
+  type: gs
+  gs_path: runs/mug_50k/gaussians.pt
+  image_size: 256
+  march_ratio: 0.3
+
+model:
+  type: kmix2
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2
+
+loss:
+  clamp: false
+  delta: 0.05
+  gamma_xi2: 0.0
+  gamma_xi2_hit: 0.05
+  gamma_order: 0.05

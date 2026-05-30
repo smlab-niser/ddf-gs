@@ -1,0 +1,22 @@
+# Stage-0 MVP: distill DDF from an analytical unit sphere.
+# Sanity check that model + loss + training loop work end-to-end
+# before plugging in GS-rendered depth supervision.
+
+device: cuda
+out_dir: runs/sphere_mvp
+
+steps: 20000
+batch_size: 4096
+lr: 5.0e-4
+log_every: 200
+save_every: 5000
+
+bbox_half: 1.5
+sphere_radius: 1.0
+lambda_vis: 0.1
+
+model:
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 256
+  num_layers: 6

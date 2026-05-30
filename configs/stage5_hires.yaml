@@ -1,0 +1,24 @@
+# Stage 5: GS supervisor at image_size 128 (4x more pixels per rendered view).
+# Same v3 supervisor architecture; longer per-step cost (~2-3x), same step count.
+
+device: cuda
+out_dir: runs/_hires_PLACEHOLDER
+
+steps: 30000
+batch_size: 4096
+lr: 5.0e-4
+log_every: 500
+save_every: 5000
+
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/PLACEHOLDER/gaussians.pt
+  image_size: 128
+
+model:
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 256
+  num_layers: 6

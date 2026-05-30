@@ -1,0 +1,42 @@
+# Real-scene GI demo: DDF on the Mip-NeRF360 "garden" table+vase, cropped to an
+# object (527k Gaussians, reused clean-gs GS, mesh-free). GS-depth supervision.
+#  - surface_n_ratio 0.25: surface-anchored rays so the GI self-shadow/AO queries
+#    (cast from surface points) are in-distribution (the E4 30 dB regime).
+#  - march_ratio 0.5: ray-march self-consistency (Stage 15) for cleaner geometry.
+#  - surface_chunk: chunk the 1x1 surface rasterization to fit 527k Gaussians.
+#  - hashgrid n_levels 18 / table 2^20 (real-scene surface area).
+
+device: cuda
+out_dir: runs/garden_obj/ddf
+
+steps: 20000
+batch_size: 8192
+lr: 2.0e-3
+lr_schedule: cosine
+lr_min_ratio: 0.05
+log_every: 500
+save_every: 5000
+
+lambda_vis: 0.3
+
+supervisor:
+  type: gs
+  gs_path: runs/garden_obj/gaussians.pt
+  image_size: 96
+  # surface-anchored 1x1 rasterization crashes (CUDA illegal access) at 527k
+  # Gaussians on gsplat 1.4.0; disabled. Frustum 2-view + ray-march gives the
+  # geometry; GI secondary-ray quality is evaluated post-hoc.
+  surface_n_ratio: 0.0
+  march_ratio: 0.5
+
+model:
+  type: hashgrid
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 18
+  feat_dim: 2
+  log2_table_size: 20
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2

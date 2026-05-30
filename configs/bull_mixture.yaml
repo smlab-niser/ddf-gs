@@ -1,0 +1,48 @@
+# Stage 14: K=2 mixture distance head + iso-aware (clamp) loss.
+#
+# Same hash-grid encoder + v3 supervisor as configs/bull_hashgrid.yaml so the
+# comparison is apples-to-apples against the Stage-3 hashgrid baseline
+# (CD 0.117 / F1@0.05 0.655). Difference is the distance head:
+#   - Output 2K+1 channels (K=2): {d_1, d_2, w_1, xi}. Implicit w_2 = 1 - w_1.
+#   - Loss: clamp-L1 over the argmax-weight component, plus BCE on xi.
+#     gamma_d=5, gamma_xi=1 follow Aumentado-Armstrong 2022 §3.3.
+# The clamp threshold delta=0.05 matches the iso level we mesh at.
+
+device: cuda
+out_dir: runs/bull_ddf_mixture
+
+steps: 30000
+batch_size: 4096
+lr: 1.0e-3
+log_every: 500
+save_every: 10000
+
+# Legacy weight (used only when loss.gamma_xi is absent + not mixture).
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/bull/gaussians.pt
+  image_size: 64
+
+model:
+  type: mixture
+  K: 2
+  # Direction encoding (sinusoidal, unchanged):
+  dir_freqs: 4
+  # MLP trunk (same as bull_hashgrid):
+  hidden_dim: 64
+  num_layers: 2
+  # Hash grid (same as bull_hashgrid):
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2
+
+loss:
+  clamp: true
+  delta: 0.05
+  gamma_d: 5.0
+  gamma_xi: 1.0

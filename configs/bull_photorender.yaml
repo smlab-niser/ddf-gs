@@ -1,0 +1,53 @@
+# Stage 16: NeuS-style photometric volume rendering supervision for DDF.
+# Based on kitchen-sink (Stage 15) — the proven DDF training stack — plus a
+# NeuS-style volume-rendering RGB loss on multi-view renders.
+#
+# Bull KS-only reaches CD 0.064 (median 0.056); NeuS @ 30k reaches CD 0.022.
+# Hypothesis: adding the multi-view RGB volume-rendering signal closes part of
+# this gap by giving the DDF additional gradient on the surface placement.
+#
+# 30k steps (KS is 60k; we cut to 30k because N=32 volume-rendering samples per
+# ray adds substantial per-step cost).
+
+device: cuda
+out_dir: runs/bull_ddf_photorender
+
+steps: 30000
+batch_size: 16384
+lr: 3.0e-3
+lr_schedule: cosine
+lr_min_ratio: 0.05
+log_every: 500
+save_every: 5000
+
+# Distance + visibility weights (same as KS).
+lambda_vis: 0.3
+# Volume-rendering RGB weight (in front of L_vr inside the photorender branch).
+lambda_rgb: 0.1
+
+supervisor:
+  type: gs_photo_render
+  gs_path: runs/bull_50k/gaussians.pt
+  views_dir: runs/bull/views
+  image_size: 256
+  march_ratio: 0.5
+  bbox_half: 1.2
+  n_rgb_rays: 1024     # multi-view rays per step (each ray gets N samples below)
+
+volume_render:
+  n_samples: 32        # NeuS uses 64; 32 to keep step cost manageable at 16384 batch
+  jitter: true
+  bg_color: [1.0, 1.0, 1.0]   # views are white-background pyrender output
+
+model:
+  type: hashgrid_photorender
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2
+  beta_init: 10.0

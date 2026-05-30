@@ -1,0 +1,27 @@
+# Task A: surface-ratio ablation on the bull.
+# surface_n_ratio = 0.5  (50% of the final batch comes from surface-anchored
+#   rays — the originally-documented intent).
+# All other settings match the bull_ddf_v3 baseline (256x6, 30k steps).
+
+device: cuda
+out_dir: runs/bull_ddf_surf50
+
+steps: 30000
+batch_size: 4096
+lr: 5.0e-4
+log_every: 500
+save_every: 10000
+
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/bull/gaussians.pt
+  image_size: 64
+  surface_n_ratio: 0.5
+
+model:
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 256
+  num_layers: 6

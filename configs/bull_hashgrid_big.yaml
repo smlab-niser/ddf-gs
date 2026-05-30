@@ -1,0 +1,43 @@
+# Hash-grid DDF — BIG variant for the bull head-recovery ablation (Stage 11).
+# Same v3 supervisor / data as configs/bull_hashgrid.yaml, but with a much larger
+# hash table to test the "model was capacity-limited" hypothesis.
+#
+# Bumped (vs bull_hashgrid.yaml):
+#   n_levels:          16 -> 32     (more multiresolution levels)
+#   feat_dim:           2 ->  4     (more features per level)
+#   log2_table_size:   19 -> 21     (4x more table entries, but capped per level
+#                                    at N^3 for the small-N levels)
+#
+# Param budget — sum_l min(N_l^3, 2^21) * feat_dim. With L=32 and growth=1.5,
+# every level >= ~10 hits the 2^21 cap, so 32 levels * 2^21 * 4 ~ 268 M
+# parameters (vs ~13 M in the baseline) — roughly 20x larger; comfortably under
+# A100's 80 GB.
+
+device: cuda
+out_dir: runs/bull_ddf_hashgrid_big
+
+steps: 30000
+batch_size: 4096
+lr: 1.0e-3
+log_every: 500
+save_every: 10000
+
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/bull/gaussians.pt
+  image_size: 64
+
+model:
+  type: hashgrid
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  # Big hash grid:
+  n_levels: 32
+  feat_dim: 4
+  log2_table_size: 21
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2

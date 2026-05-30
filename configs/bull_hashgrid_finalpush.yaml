@@ -1,0 +1,35 @@
+# Final-push: hi-res supervisor + LR scaling + 2x steps + cosine decay + boosted lambda_vis.
+# Previous hires (img=256, batch=16384, lr=1e-3, 30k steps) showed only hint of horns;
+# vis loss didn't converge. This adds: 3x LR (batch-scaled), 2x steps, cosine decay,
+# and bigger visibility weight so boundaries are fit properly.
+
+device: cuda
+out_dir: runs/bull_ddf_hashgrid_finalpush
+
+steps: 60000
+batch_size: 16384
+lr: 3.0e-3
+lr_schedule: cosine
+lr_min_ratio: 0.05
+log_every: 1000
+save_every: 10000
+
+lambda_vis: 0.3
+
+supervisor:
+  type: gs
+  gs_path: runs/bull/gaussians.pt
+  image_size: 256
+
+model:
+  type: hashgrid
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2

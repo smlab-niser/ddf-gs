@@ -1,0 +1,34 @@
+# Hi-res supervisor experiment: image_size=256 + batch=16384.
+# Diagnosis from the GS 512px side-view: horns ARE in the GS (depth + RGB).
+# Stage 5 hires went 64->128 image_size but kept batch=4096 — didn't actually
+# feed the high-frequency information to the model. This config raises BOTH
+# proportionally so the signal lands in training.
+
+device: cuda
+out_dir: runs/bull_ddf_hashgrid_hires256
+
+steps: 30000
+batch_size: 16384
+lr: 1.0e-3
+log_every: 500
+save_every: 5000
+
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/bull/gaussians.pt
+  image_size: 256
+
+model:
+  type: hashgrid
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2

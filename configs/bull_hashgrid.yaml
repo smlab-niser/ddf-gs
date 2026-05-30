@@ -1,0 +1,38 @@
+# Hash-grid DDF variant on the bull.
+# Same v3 supervisor (2-view + 50% surface-anchored) so Chamfer is comparable
+# to bull_ddf_v3 (256x6 sinusoidal baseline, CD mean 0.187).
+#
+# Hash-grid encoding on the 3D point gives a ~32-dim feature; sinusoidal dir
+# encoding kept. Tiny MLP trunk (2 x 64) because the encoder already does the
+# heavy lifting.
+
+device: cuda
+out_dir: runs/bull_ddf_hashgrid
+
+steps: 30000
+batch_size: 4096
+lr: 1.0e-3      # higher LR than baseline — Adam handles the hash table well
+log_every: 500
+save_every: 10000
+
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/bull/gaussians.pt
+  image_size: 64
+
+model:
+  type: hashgrid
+  # Direction encoding (sinusoidal, unchanged):
+  dir_freqs: 4
+  # MLP trunk:
+  hidden_dim: 64
+  num_layers: 2
+  # Hash grid:
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2

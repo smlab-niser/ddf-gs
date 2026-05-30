@@ -1,0 +1,34 @@
+device: cuda
+out_dir: runs/bull_ddf_image
+
+steps: 60000
+batch_size: 2048
+lr: 1.0e-3
+lr_schedule: cosine
+lr_min_ratio: 0.05
+log_every: 500
+save_every: 10000
+
+lambda_mask: 1.0
+lambda_color: 1.0
+lambda_eikonal: 0.1
+lambda_march: 0.5
+phase_b_start: 5000
+
+supervisor:
+  views_dir: runs/bull/views
+  fg_ratio: 0.7
+
+model:
+  type: hashgrid_color
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  color_hidden_dim: 64
+  color_num_layers: 3
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2

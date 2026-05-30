@@ -1,0 +1,23 @@
+# Stage-1: distill DDF from a fitted 3DGS of one GSO object (Hereford Bull).
+
+device: cuda
+out_dir: runs/bull_ddf
+
+steps: 30000
+batch_size: 4096
+lr: 5.0e-4
+log_every: 200
+save_every: 5000
+
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/bull/gaussians.pt
+  image_size: 64
+
+model:
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 256
+  num_layers: 6

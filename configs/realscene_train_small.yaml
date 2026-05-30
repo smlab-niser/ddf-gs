@@ -1,0 +1,28 @@
+# Small sinusoidal DDF (128x4) on the T&T train real scene. Same supervisor
+# protocol as realscene_train_hashgrid.yaml (no surface-anchored rays — see
+# that config for the why). Used as the latency-optimized variant for the
+# bench_variants comparison; quality is expected to be the worst of the trio
+# but the latency at N>=100k rays should be the best.
+
+device: cuda
+out_dir: runs/realscene_train/ddf_small
+
+steps: 30000
+batch_size: 4096
+lr: 5.0e-4
+log_every: 500
+save_every: 10000
+
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/realscene_train/gaussians.pt
+  image_size: 96
+  surface_n_ratio: 0.0
+
+model:
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 128
+  num_layers: 4

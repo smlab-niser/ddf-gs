@@ -1,0 +1,42 @@
+# Kitchen-sink + Eikonal-along-ray loss.
+# Identical recipe to bull_hashgrid_kitchensink.yaml (60k steps, march_ratio=0.5,
+# img=256, batch=16384, lr=3e-3 cosine, 50k-Gaussian source GS) PLUS:
+#  - gamma_eikonal: enforces grad_x DDF(x,d) . d + 1 = 0 on hit rays.
+#
+# Goal: sharpen surface detail by enforcing an analytical identity that nothing
+# else in the loss touches. KS-only on bull lands at CD 0.064; NeuS@30k at 0.022.
+
+device: cuda
+out_dir: runs/bull_ddf_hashgrid_eikonal
+
+steps: 60000
+batch_size: 16384
+lr: 3.0e-3
+lr_schedule: cosine
+lr_min_ratio: 0.05
+log_every: 1000
+save_every: 10000
+
+lambda_vis: 0.3
+
+supervisor:
+  type: gs
+  gs_path: runs/bull_50k/gaussians.pt
+  image_size: 256
+  march_ratio: 0.5
+
+model:
+  type: hashgrid
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2
+
+loss:
+  gamma_eikonal: 0.1   # tune this — start at 0.1, can sweep

@@ -1,0 +1,30 @@
+device: cuda
+out_dir: runs/chair_5f1b4529_ddf_neus_v3
+
+steps: 60000
+batch_size: 16384
+lr: 3.0e-3
+lr_schedule: cosine
+lr_min_ratio: 0.05
+log_every: 1000
+save_every: 10000
+
+lambda_vis: 0.3
+
+supervisor:
+  type: cached
+  cache_path: runs/chair_5f1b4529_ddf_neus_v3/cache.pt
+  march_ratio: 0.5
+
+model:
+  type: hashgrid
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2

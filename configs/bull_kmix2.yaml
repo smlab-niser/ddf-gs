@@ -1,0 +1,54 @@
+# Stage 15+ followup: K=2 mixture DDF with PER-MODE visibility + per-mode iso.
+#
+# Differs from Stage-14 (ddf_mixture / bull_mixture.yaml) in two ways:
+#   1. Each mode has its OWN visibility head (xi_1, xi_2).
+#   2. No mixture weight; the two modes are independent surfaces (extracted
+#      and unioned, not argmax-selected).
+#
+# Otherwise this is the proven kitchen-sink-lite recipe (march_ratio=0.3,
+# image_size=256, batch=16384, lr=3e-3 cosine, 30k steps).
+
+device: cuda
+out_dir: runs/bull_ddf_kmix2
+
+steps: 30000
+batch_size: 16384
+lr: 3.0e-3
+lr_schedule: cosine
+lr_min_ratio: 0.05
+log_every: 1000
+save_every: 5000
+
+# Primary visibility weight (xi_1, BCE on hit/miss). The kmix2 path also adds
+# xi_2 and d-order soft losses, weighted via loss.gamma_xi2 / loss.gamma_order
+# below.
+lambda_vis: 0.3
+
+supervisor:
+  type: gs
+  gs_path: runs/bull_50k/gaussians.pt
+  image_size: 256
+  march_ratio: 0.3
+
+model:
+  type: kmix2
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 16
+  feat_dim: 2
+  log2_table_size: 19
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2
+
+loss:
+  # No clamp on the primary distance loss — KS recipe used plain L1 and it's
+  # what gave bull CD 0.064.
+  clamp: false
+  delta: 0.05
+  # gamma_d/gamma_xi are legacy mixture knobs and unused on the kmix2 path;
+  # the kmix2 loss uses `lambda_vis` (top-level) for xi_1 BCE plus the two
+  # extras below.
+  gamma_xi2: 0.1     # xi_2 BCE on miss rays (light, just keeps xi_2 honest)
+  gamma_order: 0.05  # soft margin pushing d_2 >= d_1 + delta

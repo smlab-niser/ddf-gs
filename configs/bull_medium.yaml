@@ -1,0 +1,24 @@
+# Stage-3 latency variant: medium MLP (hidden=192, layers=5) — intermediate
+# between bull_ddf_v3 (256x6) and bull_ddf_small (128x4).
+
+device: cuda
+out_dir: runs/bull_ddf_medium
+
+steps: 30000
+batch_size: 4096
+lr: 5.0e-4
+log_every: 500
+save_every: 10000
+
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/bull/gaussians.pt
+  image_size: 64
+
+model:
+  pos_freqs: 10
+  dir_freqs: 4
+  hidden_dim: 192
+  num_layers: 5

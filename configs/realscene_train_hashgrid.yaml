@@ -1,0 +1,48 @@
+# Hash-grid DDF on the Tank-and-Temples "train" scene (real 3DGS scene-scale,
+# 661k Gaussians after foreground crop + opacity filter).
+#
+# Notes vs configs/bull_hashgrid.yaml:
+#   - supervisor image_size bumped 64 -> 96. Real scene fills more of the
+#     frame and per-pixel depth is the only signal; 96^2 = 9216 view rays per
+#     view (2 views) + surface rays still fits the 4096 batch comfortably.
+#   - bbox_half stays 1.2 (the converter normalised the foreground to r_max~1.0,
+#     plus a margin so all kept Gaussians fit inside).
+#   - n_levels bumped 16 -> 18 (slightly finer hash grid for the larger scene
+#     surface area).
+#   - log2_table_size 19 -> 20 (more table capacity for the larger scene).
+#   - lambda_vis kept at 0.1.
+#   - lr kept at 1e-3 (hash grids tolerate it well).
+
+device: cuda
+out_dir: runs/realscene_train/ddf_hashgrid
+
+steps: 30000
+batch_size: 4096
+lr: 1.0e-3
+log_every: 500
+save_every: 10000
+
+lambda_vis: 0.1
+
+supervisor:
+  type: gs
+  gs_path: runs/realscene_train/gaussians.pt
+  image_size: 96
+  # surface_n_ratio: 0.0 disables surface-anchored rays. At scene scale
+  # (661k Gaussians here) the surface render is ~10x slower per step than the
+  # two-view path (1.0 s vs 0.1 s), turning a 50 min training into 8+ hours.
+  # The v3 surface signal helps mesh-extraction fidelity on bull-sized objects;
+  # for an outside-in scene render demo we accept the v2-like trade-off.
+  surface_n_ratio: 0.0
+
+model:
+  type: hashgrid
+  dir_freqs: 4
+  hidden_dim: 64
+  num_layers: 2
+  n_levels: 18
+  feat_dim: 2
+  log2_table_size: 20
+  base_res: 16
+  growth: 1.5
+  bbox_half: 1.2
